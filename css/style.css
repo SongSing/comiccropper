@@ -1,0 +1,35 @@
+#input-file
+{
+  display: none;
+}
+
+html, body
+{
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+#label-file
+{
+  position:absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #222;
+  color: #eee;
+  cursor: pointer;
+}
+
+#label-file > span
+{
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Helivetica, sans-serif;
+  font-size: 2rem;
+  pointer-events: none;
+}
