@@ -75,10 +75,22 @@ class Canvas
         this.canvas.addEventListener("touchcancel", this.mouseLeave.bind(this));
     }
 
-    resize(w, h)
+    resize(w, h, redraw)
     {
+        let c;
+
+        if (redraw)
+        {
+            c = this.canvas.cloneNode();
+        }
+
         this.canvas.width = w;
         this.canvas.height = h;
+
+        if (redraw)
+        {
+            this.drawImage(c);
+        }
     }
 
     clear()
@@ -88,7 +100,7 @@ class Canvas
 
     deepCalcPosition()
     {
-        var z = this.canvas, x = 0, y = 0, c; 
+        let z = this.canvas, x = 0, y = 0, c; 
 
         while(z && !isNaN(z.offsetLeft) && !isNaN(z.offsetTop)) {        
             c = isNaN(window.globalStorage) ? 0 : window.getComputedStyle(z, null); 
@@ -218,9 +230,9 @@ class Canvas
     }
 
     get width() { return this.canvas.width; }
-    set width(w) { this.canvas.width = w; }
+    set width(w) { this.resize(w, this.height); }
     get height() { return this.canvas.height; }
-    set height(h) { this.canvas.height = h; }
+    set height(h) { this.resize(this.width, h); }
 
     createBlob(callback)
     {
@@ -233,7 +245,7 @@ class Canvas
     createImage(callback)
     {
         this.canvas.toBlob(function(blob) {
-            var ret = new Image();
+            let ret = new Image();
     
             ret.onload = function() {
                 callback(this);
@@ -241,13 +253,18 @@ class Canvas
                 URL.revokeObjectURL(this.src);
             };
         
-            var url = URL.createObjectURL(blob);
+            let url = URL.createObjectURL(blob);
             ret.src = url;
         });
     }
 
     drawImage(image, x, y, w, h)
     {
+        if (image instanceof Canvas)
+        {
+            image = image.canvas;
+        }
+
         if (x === undefined) x = 0;
         if (y === undefined) y = 0;
         if (w === undefined) w = image.width;
@@ -256,7 +273,7 @@ class Canvas
         this.context.drawImage(image, x, y, w, h);
     }
 
-    drawImageScaled(image, x, y, sw, sh)
+    drawScaledImage(image, x, y, sw, sh)
     {
         let w = image.width * sw;
         let h = image.height * sh;
@@ -266,9 +283,26 @@ class Canvas
 
     drawCroppedImage(image, x, y, cx, cy, cw, ch, w, h)
     {
+        if (image instanceof Canvas)
+        {
+            image = image.canvas;
+        }
+
         if (w === undefined) w = cw;
         if (h === undefined) h = ch;
 
         this.context.drawImage(image, cx, cy, cw, ch, x, y, w, h);
+    }
+
+    // use closures to make function factory function for onclick etc
+
+    fillImage(image, resizeToFit)
+    {
+        if (resizeToFit)
+        {
+            this.resize(image.width, image.height);
+        }
+
+        this.drawImage(image, 0, 0, this.width, this.height);
     }
 }

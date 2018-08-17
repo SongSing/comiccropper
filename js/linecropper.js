@@ -57,13 +57,13 @@ function doCrop(image)
             h
         );
 
-        cropCanvas.createBlob(function(blob)
+        cropCanvas.canvas.toBlob(function(blob)
         {
             /*var $img = document.createElement("img");
             $img.src = image.src;
             document.body.appendChild($img);*/
 
-            zip.file(i.toString().padStart(3, "0") + ".png", blob);
+            zip.file(i.toString().padStart(3, "0") + ".jpg", blob);
 
             i++;
             if (i <= numSlices)
@@ -77,7 +77,7 @@ function doCrop(image)
                     saveAs(blob, "cropped.zip");
                 });
             }
-        });
+        }, "image/jpeg", 1);
     };
 
     fn(0);
