@@ -11,11 +11,20 @@ function init()
             console.log("Bad file!");
         }
     };
+
+    if (dragdrop)
+    {
+        dragdrop.init(document.getElementById("dragDropOverlay"));
+        dragdrop.softEvents.onnewinput = function(input)
+        {
+            loadImage(input, doCrop);
+        };
+    }
 }
 
 function loadImage(file, cb)
 {
-    var image = new Image();
+    let image = new Image();
 
     image.onload = function()
     {
@@ -28,23 +37,23 @@ function loadImage(file, cb)
 
 function doCrop(image)
 {
-    var cropHeight = 1280;
-    var cropWidth = 800;
+    let cropHeight = 1280;
+    let cropWidth = 800;
 
-    var canvas = new Canvas();
+    let canvas = new Canvas();
     canvas.width = cropWidth;
     canvas.height = canvas.width * image.height / image.width;
     canvas.drawImage(image, 0, 0, canvas.width, canvas.height);
 
-    var cropCanvas = new Canvas();
+    let cropCanvas = new Canvas();
     cropCanvas.resize(cropWidth, cropHeight);
 
-    var numSlices = ~~(canvas.height / cropHeight);
-    var zip = new JSZip();
+    let numSlices = ~~(canvas.height / cropHeight);
+    let zip = new JSZip();
 
-    var fn = function(i)
+    let fn = function(i)
     {
-        var h =  Math.min(cropHeight, (canvas.height - (cropHeight * i)));
+        let h =  Math.min(cropHeight, (canvas.height - (cropHeight * i)));
         cropCanvas.height = h;
         cropCanvas.clear();
         cropCanvas.drawCroppedImage(
@@ -59,7 +68,7 @@ function doCrop(image)
 
         cropCanvas.canvas.toBlob(function(blob)
         {
-            /*var $img = document.createElement("img");
+            /*let $img = document.createElement("img");
             $img.src = image.src;
             document.body.appendChild($img);*/
 
