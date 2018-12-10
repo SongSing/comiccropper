@@ -1,10 +1,21 @@
+let zip;
+let numFiles = 0;
+let counter = 0;
+
 function init()
 {
+    console.log("help");
     document.getElementById("input-file").onchange = function(e)
     {
         if (this.files && this.files[0])
         {
-            loadImage(this.files[0], doCrop);
+            zip = new JSZip();
+            numFiles = this.files.length;
+            counter = 0;
+            for (let i = 0; i < this.files.length; i++)
+            {
+                loadImage(this.files[i], doCrop);
+            }
         }
         else
         {
@@ -17,7 +28,13 @@ function init()
         dragdrop.init(document.getElementById("dragDropOverlay"));
         dragdrop.softEvents.onnewinput = function(input)
         {
-            loadImage(input, doCrop);
+            zip = new JSZip();
+            numFiles = input.length;
+            counter = 0;
+            for (let i = 0; i < input.length; i++)
+            {
+                loadImage(input[i], doCrop);
+            }
         };
     }
 }
@@ -28,34 +45,36 @@ function loadImage(file, cb)
 
     image.onload = function()
     {
-        cb(this);
+        cb(this, file.name);
         window.URL.revokeObjectURL(this.src);
     };
 
     image.src = window.URL.createObjectURL(file);
 }
 
-function doCrop(image)
+function doCrop(image, filename)
 {
-    let cropHeight = 1280;
-    let cropWidth = 800;
+    let ratio = 8.5 / 11;
+    let imageRatio = image.width / image.height;
+
+    let cropWidth = image.width;
+    let cropHeight = image.width * (1 / ratio);
 
     let canvas = new Canvas();
-    canvas.width = cropWidth;
-    canvas.height = canvas.width * image.height / image.width;
+    canvas.width = image.width;
+    canvas.height = image.height;
     canvas.drawImage(image, 0, 0, canvas.width, canvas.height);
 
     let cropCanvas = new Canvas();
     cropCanvas.resize(cropWidth, cropHeight);
 
     let numSlices = ~~(canvas.height / cropHeight);
-    let zip = new JSZip();
 
     let fn = function(i)
     {
         let h =  Math.min(cropHeight, (canvas.height - (cropHeight * i)));
-        cropCanvas.height = h;
         cropCanvas.clear();
+        
         cropCanvas.drawCroppedImage(
             canvas.canvas,
             0,
@@ -72,7 +91,8 @@ function doCrop(image)
             $img.src = image.src;
             document.body.appendChild($img);*/
 
-            zip.file(i.toString().padStart(3, "0") + ".jpg", blob);
+            zip.file(filename.substr(0, filename.lastIndexOf(".")) + "_" + i.toString().padStart(3, "0") + ".png", blob);
+            console.log("zipped: " + filename.substr(0, filename.lastIndexOf(".")) + "_" + i.toString().padStart(3, "0") + ".png");
 
             i++;
             if (i <= numSlices)
@@ -81,12 +101,18 @@ function doCrop(image)
             }
             else
             {
-                zip.generateAsync({type:"blob"}).then(function(blob)
+                counter++;
+                console.log(counter);
+
+                if (counter === numFiles)
                 {
-                    saveAs(blob, "cropped.zip");
-                });
+                    zip.generateAsync({type:"blob"}).then(function(blob)
+                    {
+                        saveAs(blob, "cropped.zip");
+                    });
+                }
             }
-        }, "image/jpeg", 1);
+        });
     };
 
     fn(0);

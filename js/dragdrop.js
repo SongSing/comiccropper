@@ -33,7 +33,7 @@ var dragdrop = (function() {
                 e.preventDefault();
 
                 if (e.dataTransfer.files.length) {
-                    sandbox.broadcastInput(e.dataTransfer.files[0]);
+                    sandbox.broadcastInput(e.dataTransfer.files);
                 }
 
                 sandbox._elements.overlay.style.display = "none";
